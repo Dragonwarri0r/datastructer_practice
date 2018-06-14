@@ -1,299 +1,269 @@
-#include <stdio.h>    
-#include <stdlib.h>    
-#include <string.h>    
-typedef struct    
-{    
-    char *str;    
-    int length;    
-}String; 
-
-  
-    
-void InitString(String *S)    
-{    
-    S->length = 0;    
-    S->str = '\0';    
-}    
-   
-int Empty(String S)//判断串是否为空    
-{    
-    if(S.length == 0)    
-    {    
-        return 1;    
-    }    
-    else    
-    {    
-        return 0;    
-    }    
-}    
-int Length(String S)//求串的长度操作    
-{    
-    return S.length ;    
-}   
-int Compare(String S,String T)//串的比较操作    
-{    
-    int i，c=0;    
-    for(i = 0;i < S.length&&i < T.length ;i++)//比较两个串中的字符    
-    {    
-        if(S.str[i] != T.str[i])//如果出现字符不同，则返回两个字符的差值    
-        {    
-            c++;    
-        }    
-    }    
-    return c;//如果比较完毕，返回两个字符串的长度的差值    
-}   
-
-void Copy(String *T,String S)//串的复制操作(将串S中的每一个字符赋给T)    
-{    
-    int i;    
-    T->str = (char*)malloc(S.length*sizeof(char));    
-    if(!T->str)    
-    {    
-        exit(-1);    
-    }    
-    for(i = 0;i < S.length ;i++)    
-    {    
-        T->str[i] = S.str[i];    
-    }    
-    T->length = S.length ;    
-}    
+#include <iostream>
+#include <string.h>
+#include <stdlib.h>
+#define MAX 30
+#define NAME 10
+typedef struct fnode
+{
+	char father[NAME];
+	char mom[NAME];
+	char son[NAME];
+ } fam;
+ typedef struct tnode
+ {
+ 	char name[NAME];
+ 	struct tnode *lch,*rch;
+ }tree;
+ int n;
+ fam fa[MAX];
+ tree *create_tree(char *root)
+ {
+ 	int i =0,j;
+ 	tree *b,*p;
+ 	b=(tree*)malloc(sizeof(tree));
+ 	strcpy(b->name,root);
+ 	b->lch=b->rch=NULL;
+ 	while(i<n&&strcmp(fa[i].father,root)!=0) i++;
+	if(i<n)
+	{
+		p=(tree*)malloc(sizeof(tree));
+		p->lch=p->rch=NULL;
+		strcpy(p->name,fa[i].mom);
+		b->lch=p;
+		for(j=0;j<n;j++)
+		{
+			if(strcmp(fa[j].father,root)==0)
+			{
+				p->rch=create_tree(fa[j].son);
+				p=p->rch;
+			}
+		}
+	 } 
+	 return b;
+ }
+ void disp_tree(tree *b)
+ {
+ 	if(b!=NULL)
+ 	{
+ 		printf("%s",b->name);
+ 		if(b->lch!=NULL||b->rch!=NULL)
+ 		{
+ 			printf("(");
+ 			disp_tree(b->lch);
+ 			if(b->rch!=NULL)
+ 			printf(",");
+ 			disp_tree(b->rch);
+ 			printf(")");
+		 }
+	 }
+ }
+ tree *find_node(tree *b,char xm[])
+ {
+ 	tree *p;
+ 	if(b==NULL) return NULL;
+ 	else 
+ 	{
+ 		if(strcmp(b->name,xm)==0) return(b);
+ 		else 
+ 		{
+ 			p=find_node(b->lch,xm);
+ 			if(p!=NULL) return(p);
+ 			else
+ 			return (find_node(b->rch,xm));
+ 			
+		 }
+	 }
+ }
+ void disp_son(tree *b)
+ {
+ 	char xm[MAX];
+ 	tree *p;
+ 	printf(">>father>>:");
+ 	scanf("%S",xm);
+ 	p=find_node(b,xm);
+ 	if(p==NULL) printf("can not find!\n");
+ 	else 
+ 	{
+ 		p=p->lch;
+ 		if(p==NULL) printf("no wife");
+ 		else 
+ 		{
+ 			p=p->rch;
+ 			if(p==NULL) printf("no son");
+ 			else
+ 			{
+ 				printf(">>%s son:",xm);
+ 				while(p!=NULL)
+ 				{
+ 					printf("%10s",p->name);
+ 					p=p->rch;
+ 					
+				 }
+				 printf("\n");
+			 }
+		 }
+	 }
+ }
+ int path(tree *b,tree *s)
+ {
+ 	tree *st[MAX];
+ 	tree *p;
+ 	int i,top=-1;
+ 	bool flag;
+ 	while(top !=-1)
+ 	{
+ 	b=st[top];
+	 if(b->rch==p)
+	 {
+	 	if(b==s)
+	 	{
+	 		printf(">>all father:");
+	 		for(i=0;i<top;i++) printf("%s",st[i]->name);
+	 		printf("\n");
+	 		return 1;
+		 }
+		 else
+		 {
+		 	top --;
+		 	p=b;
+		 }
+	 }	
+	 }
+	 return 0; 
+ }
+ void ancestor(tree *b)
+ {
+ 	tree *p;
+ 	char xm[MAX];
+ 	printf("please input name :");
+ 	scanf("%s",xm);
+ 	p-find_node(b,xm);
+ 	if(p!=NULL) path(b,p);
+ 	else printf("none %s",xm);
+ }
+ int del_tree(tree *b)
+ {
+ 	if(b!=NULL)
+ 	{
+ 		del_tree(b->lch);
+ 		del_tree(b->rch);
+		 free(b);
+	 }
+ }
+ void read_file()
+ {
+ 	FILE *fp;
+ 	long len;
+ 	int i;
+ 	if((fp=fopen("fam.dat","rb"))==NULL)
+ 	{
+ 		n=0;
+ 		return ;
+	 }
+	 fseek(fp,0,2);
+	 len=ftell(fp);
+	 rewind(fp);
+	 n=len/sizeof(fam);
+	 for(i=0;i<n;i++) fread(&fa[i],sizeof(fam),1,fp);
+	 fclose(fp);
+ }
+ void save_file()
+ {
+ 	int i;
+ 	FILE *fp;
+ 	if((fp=fopen("fam.dat","wb"))==NULL)
+ 	{
+ 		printf("can nnot open!\n");
+ 		return ;
+	 }
+	 for(i=0;i<n;i++)
+	 {
+	 	fwrite(&fa[i],sizeof(fam),1,fp);
+	 }
+	 fclose(fp);
+ }
+ void input()
+ {
+ 	printf(">>input fa,mo,son:");
+ 	scanf("%s %s %s",fa[n].father,fa[n].mom,fa[n].son);
+ 	n++;
+ }
+ void output_file()
+ {
+ 	int i;
+ 	if(n<=0)
+ 	{
+ 		printf("no data!\n");
+ 		return;
+	 }
+	 printf(" father mom   son\n");
+	 for(i=0;i<n;i++)
+	 {
+	 	printf("%10s %10s %10s",fa[i].father,fa[i].mom,fa[i].son);
+	 }
+ }
+ void file()
+ {
+ 	int ch;
+ 	do 
+ 	{
+ 		printf("1:input 2:output 9:clear 0:save and back :");
+ 		scanf("%d",&ch);
+ 		switch(ch)
+ 		{
+ 			case 9:
+ 				printf("ok\n");break;
+ 			case 1:
+ 				input();break;
+ 			case 2:
+ 				output_file();break;
+ 			case 0:
+ 				save_file;break;
+ 		 }
+	 }while(ch!=0);
+ }
+ void b_tree()
+ {
+ 	tree *b;
+ 	int ch;
+ 	if (n==0) return;
+ 	b=create_tree(fa[0].father);
+ 	while(1)
+ 	{
+ 		printf("1:()dis 2:fid sb`son 3:find sb`old 0:back :");
+ 		scanf("%d",&ch);
+ 		switch(ch)
+ 		{
+ 			case 3:
+ 				printf(">>");ancestor(b);break;
+ 			case 1:
+ 				disp_tree(b);break;
+ 			case 2:
+ 				disp_son(b);break;
+ 			case 0:
+ 				return ;
+ 		 }
+	 }
+	 del_tree(b);
+ }
  
-
-void Assign(String *S,char cstr[])//串的赋值操作(将常量cstr中的字符赋值给串S)    
-{    
-    int i = 0,len;    
-    if(S->str)    
-    {    
-        free(S->str);    
-    }    
-    for(i = 0;cstr[i]!='\0';i++)    
-    {    
-        ;    
-    }    
-    len = i;    
-    if(!i)    
-    {    
-        S->length = 0;    
-        S->str = '\0';    
-    }    
-    else    
-    {    
-        S->str = (char*)malloc(len*sizeof(char));    
-        if(!S->str)    
-        {    
-            exit(-1);    
-        }    
-        for(i = 0;i < len;i++)    
-        {    
-            S->str[i] = cstr[i];    
-        }    
-        S->length = len;    
-    }    
-} 
-
-int Insert(String *S,int pos,String T)//串的插入操作(在串S的pos个位置插入串T)    
-{    
-    int i;    
-    if(pos < 0 || pos-1 > S->length)    
-    {    
-        printf("插入位置不正确\n");    
-        return 0;    
-    }    
-    S->str = (char*)realloc(S->str,(S->length+T.length)*sizeof(char));    
-    if(!S->str)    
-    {    
-        printf("内存分配失败");    
-        exit(-1);    
-    }    
-    for(i = S->length -1;i >= pos-1;i--)    
-    {    
-        S->str[i+T.length] = S->str[i];    
-    }    
-    for(i = 0;i < T.length ;i++)    
-    {    
-        S->str[i+pos-1] = T.str[i];    
-    }    
-    S->length = S->length + T.length;    
-    return 1;    
-}    
-
-
-int Delete(String *S,int pos,int len)//串的删除操作(在串S中删除pos开始的len个字符,然后将后面的字符向前移动)    
-{    
-    int i;    
-    char *p;    
-    if(pos < 0 || len < 0 || pos+len-1 > S->length)    
-    {    
-        printf("删除位置不正确，参数len不合法\n");    
-        return 0;    
-    }    
-    p = (char*)malloc(S->length-len);    
-    if(!p)    
-    {    
-        exit(-1);    
-    }    
-    for(i = 0;i < pos-1;i++)//将串第pos位置之前的字符复制到p中    
-    {    
-        p[i] = S->str[i];    
-    }    
-    for(i = pos-1;i < S->length-len;i++)//将串第pos+len位置以后的字符复制到p中    
-    {    
-        p[i] = S->str[i+len];    
-    }    
-    S->length = S->length -len;//修改串的长度    
-    free(S->str);//释放原来的串S的内存空间    
-    S->str = p;//将串的str指向p字符串    
-    return 1;    
-}    
-
-
-
-
-int Concat(String *T,String S)//串的连接操作(将串S连接在串T的后面)    
-{    
-    int i;    
-    T->str = (char*)realloc(T->str ,(T->length +S.length )*sizeof(char));    
-    if(!T->str)    
-    {    
-        printf("分配空间失败");    
-        exit(-1);    
-    }    
-    else    
-    {    
-        for(i = T->length ;i < T->length +S.length ;i++)//将串S直接连接到T的末尾    
-        {    
-            T->str[i] = S.str[i-T->length];    
-        }    
-        T->length = T->length +S.length ;//修改串T的长度    
-    }    
-    return 1;    
-}    
-
-   
-int Index(String S,int pos,String T)//串的定位操作(在主串S中的第pos个位置开始查找子串T,如果主串S中存在与串T值相等的子串，返回子串在主串第pos个字符后第一次出现的位置)    
-{    
-    int i,j;    
-    if(Empty(T))    
-    {    
-        return 0;    
-    }    
-    i = pos;    
-    j = 0;    
-    while(i < S.length && j < T.length)    
-    {    
-        if(S.str[i] == T.str[j])    
-        {    
-            i++;    
-            j++;    
-        }    
-        else//如果当前对应位置的字符不相等，则从串S的下一个字符开始，从T的第0个字符开始比较    
-        {    
-            i = i-j+1;    
-            j = 0;    
-        }    
-    }    
-    if(j >= T.length)//如果在串S中找到串T，则返回子串T在主串S中的位置    
-    {    
-        return i-j+1;    
-    }    
-    else    
-    {    
-        return 0;    
-    }    
-}    
-  
-void Clear(String *S)//清空串操作    
-{    
-    if(S->str)    
-    {    
-        free(S->str);    
-    }    
-    S->str = '\0';    
-    S->length = 0;    
-}    
-void Destory(String *S)//摧毁串操作    
-{    
-    if(S->str)    
-    {    
-        free(S->str);    
-    }    
-}    
-void Print(String S)//串的输出声明    
-{    
-    int i;    
-    for(i = 0;i < S.length ;i++)    
-    {    
-        printf("%c",S.str[i]);    
-    }    
-    printf("\n");    
-}    
-  
-  
-  
-  
-int main(void)    
-{    
-	int a=0;
-    String S1,S2,Sub;    
-    char ch[20]; 
-	char sh[20];
-    InitString(&S1);    
-    InitString(&S2);    
-    InitString(&Sub);   
+int main(int argc, char** argv) {
+	tree *b;
+	int ch;
+	read_file();
 	while(1)
 	{
-		printf("1.请输入第一个字符串：\n");    
-      	printf("2.请输入第二个字符串：\n");    
-    	printf("3.将串S2连接到串S1的末尾，S1串为：\n");    
-     	printf("4.将串S2插入到串S1的第一个位置：\n");
-     	printf("5.把串S1的第一个位置之后的8个字符删除：\n");  
-		printf("6.比较s1与s2的长度并返回长度差\n");
-		scanf("%d",&a);
-		switch(a)
+		printf("1:file 2:family 0:exit :");
+		scanf("%d",&ch);
+		switch(ch)
 		{
-        case 1:
-	    	printf("请输入第一个字符串(10位以内)：\n");    
-            scanf("%s",ch);
-			getchar();
-            Assign(&S1,ch); 
-			printf("经过赋值操作后的串S1：\n"); 
-			Print(S1);
-			printf("\n\n");
-			break;
- 		case 2:
-	        printf("请输入第二个字符串(10位以内)：\n");    
-            scanf("%s",sh); 
-			getchar();
-            Assign(&S2,sh);
-		    printf("经过赋值操作后的串S2：\n");  
-		    Print(S2);   
-		    printf("\n\n");
-		    break;
-		case 3:
-            Concat(&S1,S2); 
-		    printf("将串S2连接到串S1的末尾，S1串为：\n");    
-            Print(S1); 
-		    printf("\n\n");
-		    break;
-		case 4:
-	        Insert(&S1,1,Sub);
-		    printf("将串S2插入到串S1的第一个位置为：\n");
-            Print(S1); 
-		    printf("\n\n");
-		    break;
- 		case 5:	
-            Delete(&S1,1,5); 
-       	    printf("把串S1的第一个位置之后的5个字符删除后为：\n"); 
-            Print(S1); 
-		    printf("\n\n");
-		case 6:
-			printf("两字符串的长度差为:\n");
-			printf("%d",Compare(S2,S1));
-        	printf("\n\n");
-
+			case 1:
+				file();break;
+			case 2:
+				b_tree();break;
+			case 0:
+				return 1;
 		}
-	
-
 	}
-    return 0;    
-}  
+	return 1;
+}
